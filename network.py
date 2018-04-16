@@ -23,6 +23,8 @@ class NetworkServerController:
         self.s.listen(5)
         #Empty client list
         self.client = []
+        def_map = model.map.load(filename)  #to modify
+
 
             
     # time event        
@@ -32,6 +34,8 @@ class NetworkServerController:
             if sock == self.s and ready_to_read:
                 player, addr = self.s.accept()
                 print("{} connected".format(addr))
+                
+                player.sendall(def_map)     #to modify
 ##                data = player.recv(4096)
 ##                print("Data received from player!")
 ##                data.decode("utf-8")
@@ -52,8 +56,9 @@ class NetworkClientController:
         self.sock = socket.socket(socket.AF_INET6, socket.SOCK_STREAM, 0)
         self.sock.connect((host, port))
         print("Connected to the game server")
-        model.load_map(DEFAULT_MAP)
+        
         # ...
+        
     
 
     # keyboard events
@@ -80,9 +85,9 @@ class NetworkClientController:
         return True
 
 
-        
-
+    
     # time event
 
     def tick(self, dt):
+        msg = self.sock.recv(9).decode()  #to modify
         return True
