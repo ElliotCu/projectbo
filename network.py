@@ -62,7 +62,7 @@ class NetworkClientController:
         print("=> event \"quit\"")
         return False
 
-    def keyboard_move_character(self, direction):
+    def keyboard_move_character(self, direction): #Floki:I completed this function from bomber.py
         print("=> event \"keyboard move direction\" {}".format(DIRECTIONS_STR[direction]))
         if not self.model.player: return True
         nickname = self.model.player.nickname
@@ -71,7 +71,7 @@ class NetworkClientController:
         # ...
         return True
 
-    def keyboard_drop_bomb(self):
+    def keyboard_drop_bomb(self):               #Floki:I completed this function from bomber.py
         print("=> event \"keyboard drop bomb\"")
         if not self.model.player: return True
         nickname = self.model.player.nickname
@@ -79,12 +79,7 @@ class NetworkClientController:
         # ...
         return True
 
-     #addiding fruits:
-    def add_fruit(self, kind = None, pos = None):
-        if pos is None: pos = self.map.random()
-        if kind is None: kind = random.choice(FRUITS)
-        self.fruits.append(Fruit(kind, self.map, pos))
-        print("=> add fruit ({}) at position ({},{})".format(FRUITS_STR[kind], pos[X], pos[Y]))
+
         
 
     # time event
