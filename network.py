@@ -73,6 +73,7 @@ class NetworkClientController:
         print("Host: {} Port: {}".format(self.host, self.port))
         the_map = self.sock.recv(11) #to modify
         print("received map by client {}".format(the_map.decode()))
+        model.load_map(the_map)
 
         
         # ...
