@@ -39,12 +39,17 @@ class NetworkServerController:
                 # parse arguments
                 if len(sys.argv) == 2:
                     map_file = DEFAULT_MAP
+                    player.sendall(b"maps/map0")  
                 elif len(sys.argv) == 3:
                     map_file = sys.argv[2]
+                    if map_file == "maps/map0":
+                        player.sendall(b"maps/map0")
+                    else:
+                        player.sendall(b"maps/map1")
                 else:
                     print("Usage: {} port [map_file]".format(sys.argv[0]))
                     sys.exit()
-                player.send(b"self.model.map.load(map_file)")     #to modify
+                #player.sendall(b"map_file")     #to modify
 ##                data = player.recv(4096)
 ##                print("Data received from player!")
 ##                data.decode("utf-8")
@@ -65,7 +70,9 @@ class NetworkClientController:
         self.sock = socket.socket(socket.AF_INET6, socket.SOCK_STREAM, 0)
         self.sock.connect((host, port))
         print("Connected to the game server")
-        the_map = self.sock.recv(11).decode()  #to modify
+        print("Host: {} Port: {}".format(self.host, self.port))
+        the_map = self.sock.recv(11) #to modify
+        print("received map by client {}".format(the_map.decode()))
 
         
         # ...
