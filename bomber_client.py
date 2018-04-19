@@ -30,18 +30,22 @@ pygame.display.init()
 pygame.font.init()
 clock = pygame.time.Clock()
 model = Model()
-model.load_map(DEFAULT_MAP)
-view = GraphicView(model, nickname)
 client = NetworkClientController(model, host, port, nickname)
+view = GraphicView(model, nickname)
 kb = KeyboardController(client)
 
 # main loop
 while True:
     # make sure game doesn't run at more than FPS frames per second
+    print("1\n")
     dt = clock.tick(FPS)
+    print("2\n")
     if not kb.tick(dt): break
+    print("3\n")
     if not client.tick(dt): break
+    print("4\n")
     model.tick(dt)
+    print("5\n")
     view.tick(dt)
 
 # quit

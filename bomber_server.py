@@ -41,8 +41,11 @@ server = NetworkServerController(model, port)
 # main loop
 while True:
     # make sure game doesn't run at more than FPS frames per second
+    print("1\n")
     dt = clock.tick(FPS)
+    print("2\n")
     server.tick(dt)
+    print("3\n")
     model.tick(dt)
     # view.tick(dt)
 
