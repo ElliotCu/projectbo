@@ -23,11 +23,7 @@ class NetworkServerController:
         self.s.listen(5)
         #Empty client list
         self.client = []
-
         
-
-
-
             
     # time event        
     def tick(self, dt):
@@ -39,13 +35,16 @@ class NetworkServerController:
                 # parse arguments
                 if len(sys.argv) == 2:
                     map_file = DEFAULT_MAP
-                    player.sendall(b"maps/map0")  
+                    player.sendall(b"maps/map0")
+                    ack = player.recv(1024)          #ack confirmation
                 elif len(sys.argv) == 3:
                     map_file = sys.argv[2]
                     if map_file == "maps/map0":
                         player.sendall(b"maps/map0")
+                        ack = player.recv(1000)      #ack confirmation
                     else:
                         player.sendall(b"maps/map1")
+                        ack = player.recv(1000)     #ack confirmation
                 else:
                     print("Usage: {} port [map_file]".format(sys.argv[0]))
                     sys.exit()
@@ -71,11 +70,11 @@ class NetworkClientController:
         self.sock.connect((host, port))
         print("Connected to the game server")
         print("Host: {} Port: {}".format(self.host, self.port))
-        the_map = self.sock.recv(11) #to modify
+        the_map = self.sock.recv(4096) #receiving the correct map
         print("received map by client {}".format(the_map.decode()))
-        model.load_map(the_map)         #Last modification
+        self.sock.send(b"ACK")          #ack confrimation for fruits
+        model.load_map(the_map)         #Load map
 
-        
 
         
         # ...
