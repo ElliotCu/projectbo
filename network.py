@@ -98,14 +98,14 @@ class NetworkServerController:
                 self.send_fruits()
                 #the following part is for adding a character
                 print("before adding character")
-                self.model.add_character("me", isplayer = True)
+                '''self.model.add_character("me", isplayer = True)'''
                 print("after adding character")
-                clock = pygame.time.Clock()
+                '''clock = pygame.time.Clock()
                 dt = clock.tick(0)
-                view.tick(dt)
+                view.tick(dt)'''
                 print("viewing after adding character")
                 #the following part is for sending the character
-                self.send_character()
+                '''self.send_character()'''
 ##                data = player.recv(4096)
 ##                print("Data received from player!")
 ##                data.decode("utf-8")
@@ -161,21 +161,20 @@ class NetworkClientController:
     
     #useful fonctions
 
-    def receive_map(self):
-        pickle_in = open("dict.pickle","rb")
+    def receive_fruits(self, pickle_in):
         self.model.fruits = pickle.load(pickle_in)
 
-    def receive_character(self):
-        pickle_in = open("dict.pickle","rb")
+    def receive_character(self, pickle_in):
         self.model.characters = pickle.load(pickle_in)
 
     # time event
 
     def tick(self, dt):
+        pickle_in = open("dict.pickle","rb")
         #the following part is for receiving fruits
-        self.receive_map()
+        self.receive_fruits(pickle_in)
         #the following part is for receiving the character
-        self.receive_character()
+        '''self.receive_character(pickle_in)'''
         
         return True
 
