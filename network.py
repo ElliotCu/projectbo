@@ -4,6 +4,17 @@
 from model import *
 import socket
 import select
+import pickle
+
+#the following importations are for testing
+from view import *
+from keyboard import *
+from network import *
+import sys
+import pygame
+
+#number of fruits
+nb_fruits = 10
 ################################################################################
 #                          NETWORK SERVER CONTROLLER                           #
 ################################################################################
@@ -23,8 +34,49 @@ class NetworkServerController:
         self.s.listen(5)
         #Empty client list
         self.client = []
+
+    def send_map(self, map_file, player):
+        if len(sys.argv) == 2:
+            map_file = DEFAULT_MAP
+            player.sendall(b"maps/map0")
+            ack = player.recv(1024)          #ack confirmation
+        if len(sys.argv) == 3:
+            map_file = sys.argv[2]
+            if map_file == "maps/map0":
+                player.sendall(b"maps/map0")
+                ack = player.recv(1024)          #ack confirmation
+            else:
+                player.sendall(b"maps/map1")
+                ack = player.recv(1024)          #ack confirmation
+        else:
+            print("Usage: {} port [map_file]".format(sys.argv[0]))
+            sys.exit()
+        return map_file
+    
+    def initialise_map_with_fruits(self, model):
+        for _ in range(nb_fruits): model.add_fruit()
+    '''
+    def send_fruits(self, player):
+        for i in range(nb_fruits):
+            ### we dont send fruit.map for the moment because it's not important
+            print("fruit pos to send {}".format( self.model.fruits[i].pos ))
+            print("fruit pos x {}".format( self.model.fruits[i].pos[X] ))
+            print("fruit pos y {}".format( self.model.fruits[i].pos[Y] ))
+            player.sendall( self.model.fruits[i].pos[X] )
+            ack = player.recv(1024) 
+            playes.sendall( b"self.model.fruits[i].kind" )
+            ack = player.recv(1024)
+    '''
+    def send_fruits(self):
+        pickle_out = open("dict.pickle","wb")
+        fruits_to_send = pickle.dump(self.model.fruits, pickle_out)
+        pickle_out.close()
+
+    def send_character(self):
+        pickle_out = open("dict.pickle","wb")
+        fruits_to_send = pickle.dump(self.model.characters, pickle_out)
+        pickle_out.close()
         
-            
     # time event        
     def tick(self, dt):
         (ready_to_read,_,_) = select.select(self.client+[self.s], [], [])
@@ -33,22 +85,27 @@ class NetworkServerController:
                 player, addr = self.s.accept()
                 print("{} connected".format(addr))
                 # parse arguments
-                if len(sys.argv) == 2:
-                    map_file = DEFAULT_MAP
-                    player.sendall(b"maps/map0")
-                    ack = player.recv(1024)          #ack confirmation
-                elif len(sys.argv) == 3:
-                    map_file = sys.argv[2]
-                    if map_file == "maps/map0":
-                        player.sendall(b"maps/map0")
-                        ack = player.recv(1000)      #ack confirmation
-                    else:
-                        player.sendall(b"maps/map1")
-                        ack = player.recv(1000)     #ack confirmation
-                else:
-                    print("Usage: {} port [map_file]".format(sys.argv[0]))
-                    sys.exit()
-                #player.sendall(b"map_file")     #to modify
+                # the following part is for sending the map (i.e name of map)
+                map_file = "" # this variable will contain the chosen map by client
+                map_file = self.send_map(map_file, player)
+                print("Loaded map by the server {}".format(map_file))
+                self.model.load_map(map_file)
+                # the following part is for putin fruits randomly on the map
+                self.initialise_map_with_fruits(self.model)
+                view = GraphicView(self.model, "network map")
+                view.tick(dt)
+                #the following part is for sending fruits
+                self.send_fruits()
+                #the following part is for adding a character
+                print("before adding character")
+                self.model.add_character("me", isplayer = True)
+                print("after adding character")
+                clock = pygame.time.Clock()
+                dt = clock.tick(0)
+                view.tick(dt)
+                print("viewing after adding character")
+                #the following part is for sending the character
+                self.send_character()
 ##                data = player.recv(4096)
 ##                print("Data received from player!")
 ##                data.decode("utf-8")
@@ -74,8 +131,6 @@ class NetworkClientController:
         print("received map by client {}".format(the_map.decode()))
         self.sock.send(b"ACK")          #ack confrimation for fruits
         model.load_map(the_map)         #Load map
-
-
         
         # ...
         
@@ -103,10 +158,24 @@ class NetworkClientController:
         self.model.drop_bomb(nickname)
         # ...
         return True
-
-
     
+    #useful fonctions
+
+    def receive_map(self):
+        pickle_in = open("dict.pickle","rb")
+        self.model.fruits = pickle.load(pickle_in)
+
+    def receive_character(self):
+        pickle_in = open("dict.pickle","rb")
+        self.model.characters = pickle.load(pickle_in)
+
     # time event
 
     def tick(self, dt):
+        #the following part is for receiving fruits
+        self.receive_map()
+        #the following part is for receiving the character
+        self.receive_character()
+        
         return True
+

@@ -224,7 +224,7 @@ class Model:
         if pos is None: pos = self.map.random()
         if kind is None: kind = random.choice(FRUITS)
         self.fruits.append(Fruit(kind, self.map, pos))
-        print("=> add fruit ({}) at position ({},{})".format(FRUITS_STR[kind], pos[X], pos[Y]))
+        print("=> add fruit ({}) at position ({},{}) ,type of map ({})".format(FRUITS_STR[kind], pos[X], pos[Y],self.map))
 
     # add a new character
     def add_character(self, nickname, isplayer = False, kind = None, pos = None):
