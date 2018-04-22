@@ -68,13 +68,13 @@ class NetworkServerController:
             ack = player.recv(1024)
     '''
     def send_fruits(self):
-        pickle_out = open("dict.pickle","wb")
-        fruits_to_send = pickle.dump(self.model.fruits, pickle_out)
+        pickle_out = open("dict.pickle1","wb")
+        pickle.dump(self.model.fruits, pickle_out)
         pickle_out.close()
 
     def send_character(self):
-        pickle_out = open("dict.pickle","wb")
-        fruits_to_send = pickle.dump(self.model.characters, pickle_out)
+        pickle_out = open("dict.pickle2","wb")
+        pickle.dump(self.model.characters, pickle_out)
         pickle_out.close()
         
     # time event        
@@ -98,14 +98,14 @@ class NetworkServerController:
                 self.send_fruits()
                 #the following part is for adding a character
                 print("before adding character")
-                '''self.model.add_character("me", isplayer = True)'''
+                self.model.add_character("me", isplayer = True)
                 print("after adding character")
-                '''clock = pygame.time.Clock()
+                clock = pygame.time.Clock()
                 dt = clock.tick(0)
-                view.tick(dt)'''
+                view.tick(dt)
                 print("viewing after adding character")
                 #the following part is for sending the character
-                '''self.send_character()'''
+                self.send_character()
 ##                data = player.recv(4096)
 ##                print("Data received from player!")
 ##                data.decode("utf-8")
@@ -161,20 +161,21 @@ class NetworkClientController:
     
     #useful fonctions
 
-    def receive_fruits(self, pickle_in):
+    def receive_fruits(self):
+        pickle_in = open("dict.pickle1","rb")
         self.model.fruits = pickle.load(pickle_in)
 
-    def receive_character(self, pickle_in):
+    def receive_character(self):
+        pickle_in = open("dict.pickle2","rb")
         self.model.characters = pickle.load(pickle_in)
 
     # time event
 
     def tick(self, dt):
-        pickle_in = open("dict.pickle","rb")
         #the following part is for receiving fruits
-        self.receive_fruits(pickle_in)
+        self.receive_fruits()
         #the following part is for receiving the character
-        '''self.receive_character(pickle_in)'''
+        self.receive_character()
         
         return True
 
