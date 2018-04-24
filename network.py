@@ -105,7 +105,7 @@ class NetworkClientController:
 
         #receiving characters
         characters = self.sock.recv(4096)
-        map_characters = pickle.loads(fruits)
+        map_characters = pickle.loads(characters)
         self.sock.send(b"ACK")
         self.model.characters = map_characters
         print("fucking characters well received!")
