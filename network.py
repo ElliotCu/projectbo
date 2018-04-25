@@ -5,6 +5,13 @@ from model import *
 import socket
 import select
 import pickle
+
+#usful importations just for working on the projetc
+from view import *
+#from keyboard import * (we ommit this importation for the moment)
+import sys
+import pygame
+
 ################################################################################
 #                          NETWORK SERVER CONTROLLER                           #
 ################################################################################
@@ -25,50 +32,62 @@ class NetworkServerController:
         #Empty client list
         self.client = []
         
-    def send_map(self, map_file, player):
+    def send_map(self, map_file, chosen_s):
         if len(sys.argv) == 2:
             map_file = DEFAULT_MAP
-            player.sendall(b"maps/map0")
-            ack = player.recv(1024)          #ack confirmation
+            chosen_s.sendall(b"maps/map0")
+            ack = chosen_s.recv(1024)          #ack confirmation
         if len(sys.argv) == 3:
             map_file = sys.argv[2]
             if map_file == "maps/map0":
-                player.sendall(b"maps/map0")
-                ack = player.recv(1024)          #ack confirmation
+                chosen_s.sendall(b"maps/map0")
+                ack = chosen_s.recv(1024)          #ack confirmation
             else:
-                player.sendall(b"maps/map1")
-                ack = player.recv(1024)          #ack confirmation
+                chosen_s.sendall(b"maps/map1")
+                ack = chosen_s.recv(1024)          #ack confirmation
         else:
             print("Usage: {} port [map_file]".format(sys.argv[0]))
             sys.exit()
         return map_file
 
-    def send_fruits(self, model, player):
-        self.model = model 
-        send_fruits = pickle.dumps(model.fruits)
-        player.sendall(send_fruits)
-        ack = player.recv(1024)
+    def send_fruits(self, chosen_s):
+        send_fruits = pickle.dumps(self.model.fruits)
+        chosen_s.sendall(send_fruits)
+        ack = chosen_s.recv(1024)
             
-    def send_characters(self, model, player):
-        self.model = model
-        send_character = pickle.dumps(model.characters)
-        player.sendall(send_character)
-        ack = player.recv(1024)
+    def send_characters(self, chosen_s):
+        send_character = pickle.dumps(self.model.characters)
+        chosen_s.sendall(send_character)
+        ack = chosen_s.recv(1024)
 
+    def receive_player(self, chosen_s):
+        player = self.sock.recv(4096)
+        map_player = pickle.loads(player)
+        chosen_s.send(b"ACK")          #ack to confirm receiving fruits
+        self.model.player = map_player
+
+    
     # time event        
     def tick(self, dt):
         (ready_to_read,_,_) = select.select(self.client+[self.s], [], [])
         for sock in ready_to_read:
             if sock == self.s and ready_to_read:
-                player, addr = self.s.accept()
+                chosen_s, addr = self.s.accept()
                 print("{} connected".format(addr))
                 map_file = "" # this variable will contain the chosen map by client
-                map_file = self.send_map(map_file, player)   #this function load the map and send it to the client
+                map_file = self.send_map(map_file, chosen_s)   #this function load the map and send it to the client
                 print("Loaded map by the server {}".format(map_file))
-                my_fruits = self.send_fruits(self.model, player)
-                print("Fucking fruits sent".format(my_fruits))
-                my_characters = self.send_characters(self.model, player)
-                print("Fucking characters sent!".format(my_characters))
+                self.send_fruits(self.model, chosen_s)
+                view = GraphicView(self.model, "network map")
+                view.tick(dt)
+                print("fruits sent !")
+                self.receive_player(self.model, chosen_s)
+                print("player received !")
+                '''self.send_characters(chosen_s)
+                print("characters sent!")'''
+                view.tick(dt)
+                print("network map printed !")
+                
                 
 
         return True
@@ -102,23 +121,29 @@ class NetworkClientController:
         self.sock.send(b"ACK")          #ack to confirm receiving fruits
         self.model.fruits = map_fruits
         print("well received")
+        
+        #initialising my player (character) and sending it
+        self.model.add_character(nickname, isplayer = True)
+        send_player = pickle.dumps(model.player)
+        self.sock.sendall(send_player)
+        ack = self.sock.recv(1024)
+        
+  
 
-        #receiving characters
-        characters = self.sock.recv(4096)
+    #useful fonctions
+    def receive_characters(self)
+        self.sock = self.sock.recv(4096)
         map_characters = pickle.loads(characters)
         self.sock.send(b"ACK")
         self.model.characters = map_characters
-        print("fucking characters well received!")
-        
-
-        
+        print("characters well received!")
     
     # keyboard events
 
     def keyboard_quit(self):
-        print("=> event \"quit\"")
+        print("event => \"quit\"")
         return False
-
+    
     def keyboard_move_character(self, direction): #Floki:I completed this function from bomber.py
         print("=> event \"keyboard move direction\" {}".format(DIRECTIONS_STR[direction]))
         if not self.model.player: return True

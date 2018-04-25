@@ -181,9 +181,9 @@ class Model:
 
     # initialize model
     def __init__(self):
-        self.map = Map()
-        self.characters = []
-        self.fruits = []
+        self.map = Map() #sent
+        self.characters = [] 
+        self.fruits = [] #sent
         self.bombs = []
         self.player = None
 
