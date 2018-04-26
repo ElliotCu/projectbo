@@ -175,4 +175,8 @@ class NetworkClientController:
     # time event
 
     def tick(self, dt):
+        #part 1 : sending model (we cant tell if it was modified or not by a keyboard event)
+        '''code'''
+        #part 2 : receving the new modified model by the server
+        '''code'''
         return True
