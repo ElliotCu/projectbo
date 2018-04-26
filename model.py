@@ -182,10 +182,10 @@ class Model:
     # initialize model
     def __init__(self):
         self.map = Map() #sent
-        self.characters = [] 
+        self.characters = [] #sent
         self.fruits = [] #sent
         self.bombs = []
-        self.player = None
+        self.player = None 
 
     # look for a character, return None if not found
     def look(self, nickname):
@@ -224,7 +224,7 @@ class Model:
         if pos is None: pos = self.map.random()
         if kind is None: kind = random.choice(FRUITS)
         self.fruits.append(Fruit(kind, self.map, pos))
-        print("=> add fruit ({}) at position ({},{}) ,type of map ({})".format(FRUITS_STR[kind], pos[X], pos[Y],self.map))
+        print("=> add fruit ({}) at position ({},{})".format(FRUITS_STR[kind], pos[X], pos[Y]))
 
     # add a new character
     def add_character(self, nickname, isplayer = False, kind = None, pos = None):

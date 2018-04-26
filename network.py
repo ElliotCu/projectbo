@@ -5,6 +5,13 @@ from model import *
 import socket
 import select
 import pickle
+
+#importation useful for viewig map
+#dont delete the following section
+from view import *
+from keyboard import *
+import sys
+import pygame
 ################################################################################
 #                          NETWORK SERVER CONTROLLER                           #
 ################################################################################
@@ -25,6 +32,7 @@ class NetworkServerController:
         #Empty client list
         self.client = []
         
+        
 
     def send_map(self, conn):
         send_map = pickle.dumps(self.model.map)
@@ -37,12 +45,15 @@ class NetworkServerController:
         conn.sendall(send_fruits)
         ack = conn.recv(1024)
 
-##    def receive_player(self, conn):
-##        new_player = self.conn.recv(4096)
-##        map_player = pickle.loads(new_player)
-##        chosen_s.send(b"ACK")                       #ack to confirm receiving player
-##        self.model.player = map_player
-##            
+    def receive_player(self, conn):
+        new_player = conn.recv(4096)
+        map_player = pickle.loads(new_player)
+        conn.send(b"ACK")                       #ack to confirm receiving player
+        self.model.player = map_player
+        if map_player  not in self.model.characters :
+            self.model.characters.append(map_player)
+        
+            
     def send_characters(self, conn):
         send_character = pickle.dumps(self.model.characters)
         conn.sendall(send_character)
@@ -53,7 +64,15 @@ class NetworkServerController:
         conn.sendall(send_bomb)
         ack = conn.recv(1024)
 
-
+    def send_initialised_model(self, conn):
+        self.send_map(conn)   #this function load the map and send it to the client
+        print("map was send successfully")
+        self.send_fruits(conn)
+        print("Fruits were sent successfully")
+        self.receive_player(conn)
+        print("player is received successfully")
+        self.send_characters(conn)
+        print("Characters were sent successfully")
         
     # time event        
     def tick(self, dt):
@@ -62,18 +81,15 @@ class NetworkServerController:
             if sock == self.s and ready_to_read:
                 conn, addr = self.s.accept()
                 print("{} connected".format(addr))
-                self.send_map(conn)   #this function load the map and send it to the client
-                print("Loaded map by the server")
-                self.send_fruits(conn)
-                print("Fruits were sent successfully")
-##                self.receive_player(conn)
-                print("player is received successfully")
-                self.send_characters(conn)
-                print("Characters were sent successfully")
-                self.send_bomb(conn)
-                print("Bombs were successfully sent")
-                
-
+                view = GraphicView(self.model, "network map") #dont delete this line 
+                #part 1 : sending model to work with 
+                self.send_initialised_model(conn)
+                print("initialised map sent successfully")
+                #part 2 : receiving events and modifying the model
+                '''self.send_bomb(conn)
+                print("Bombs were successfully sent")'''
+                view.tick(dt) #dont delete this line
+                print("netwok map printed")
         return True
 
 ################################################################################
@@ -109,10 +125,10 @@ class NetworkClientController:
         print("well received")
 
         #send player
-        self.model.add_character(nickname, isplayer = True)
-##        send_pl = pickle.dumps(send_player)
-##        self.sock.sendall(send_pl)
-##        ack = self.sock.recv(1024)
+        send_player = self.model.add_character(nickname, isplayer = True)
+        send_pl = pickle.dumps(send_player)
+        self.sock.sendall(send_pl)
+        ack = self.sock.recv(1024)
 
         #receiving characters
         characters = self.sock.recv(4096)
@@ -122,11 +138,11 @@ class NetworkClientController:
         print("Characters well received!")
 
         #receive bombs
-        bombs = self.sock.recv(4096)
+        '''bombs = self.sock.recv(4096)
         map_bombs = pickle.loads(bombs)
         self.sock.send(b"ACK")
         self.model.bombs = map_bombs
-        print("Bombs well received!")
+        print("Bombs well received!")'''
     
     # keyboard events
 
