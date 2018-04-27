@@ -184,7 +184,7 @@ class Model:
         self.map = Map() #sent
         self.characters = [] #sent
         self.fruits = [] #sent
-        self.bombs = []
+        self.bombs = [] #sent
         self.player = None 
 
     # look for a character, return None if not found
